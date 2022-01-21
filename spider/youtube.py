@@ -64,7 +64,7 @@ def get_element(selector, driver, wait=10, click=False):
     return element
 
 
-try:
+def parse(driver):
     driver.get('https://youtube.com')
 
     search_input = get_element('input#search', driver)
@@ -84,12 +84,17 @@ try:
         driver.get(i['url'])
         # skip_premium_button = get_element('div.ytd-mealbar-promo-renderer a.yt-simple-endpoint #button[aria-label="Skip trial"]', driver, click=True)
         like_dislike_btn_row = [(x.text, x.get_attribute('aria-label')) for x in driver.find_elements_by_css_selector('div#info yt-formatted-string#text')]
-        stat = {'like': int(x[0]) for x in like_dislike_btn_row if x[1] and 'like' in x[1]}
+        stat = {'like': x[0] for x in like_dislike_btn_row if x[1] and 'like' in x[1]}
 
         info_row = driver.find_element_by_css_selector('div#info-text')
         stat['view'] = int(''.join([x for x in info_row.find_element_by_css_selector('div#count').text if x in string.digits]))
         raw_pub_date = datetime.strptime(info_row.find_element_by_css_selector('div#info-strings yt-formatted-string').text, '%b %d, %Y').isoformat()
         stat['pub_date'] = raw_pub_date.split('T')[0]
+        print(stat)
+
+
+try:
+    parse(driver)
 except Exception as e:
     print(e)
     traceback.print_exc()
