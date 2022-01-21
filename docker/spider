@@ -1,0 +1,44 @@
+FROM python:3.9.5-buster
+
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV APP_DIR=/python_app
+ENV VEN_DIR=/vendor
+ENV GECKODRIVER_BIN=$VEN_DIR/geckodriver
+
+# Set the locale
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+ENV FIREFOX_BIN=$VEN_DIR/firefox/firefox
+ARG FIREFOX_VERSION=88.0.1
+ARG FIREFOX_FN=firefox-$FIREFOX_VERSION.tar.bz2
+ARG GECKODRIVER_VERSION=0.29.1
+
+RUN apt update -y && apt upgrade -y \
+    && apt install -y curl telnet ffmpeg \
+      libgtk-3-0 libgtk-3-bin libgtk-3-common libx11-xcb-dev libdbus-glib-1-2 \
+    && apt autoremove -y && apt clean && rm -rfv /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# make required dirs
+RUN mkdir $APP_DIR && mkdir $VEN_DIR
+
+# firefox deps
+WORKDIR $VEN_DIR
+RUN wget "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" \
+    && tar -xvzf geckodriver* && chmod +x geckodriver && rm -fv geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz
+RUN wget "https://download-installer.cdn.mozilla.net/pub/firefox/releases/$FIREFOX_VERSION/linux-x86_64/en-US/$FIREFOX_FN" -O $VEN_DIR/$FIREFOX_FN \
+    && tar -xvjf $FIREFOX_FN && rm -fv $FIREFOX_FN
+
+# python app deps
+WORKDIR $APP_DIR
+COPY requirements.txt $APP_DIR
+RUN pip install -r requirements.txt --no-cache-dir
+
+# add entrypoint script
+WORKDIR $APP_DIR
+
+CMD while true; do sleep 10; done

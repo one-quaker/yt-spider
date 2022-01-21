@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+    yt_spider:
+        build:
+            dockerfile: ./docker/spider
+            context: ./
+        image: "onepycoder/yt-spider:1.0.0"
+        volumes:
+            - ./spider:/python_app
+        environment:
+            - HEADLESS=1
