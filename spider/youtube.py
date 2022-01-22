@@ -77,6 +77,16 @@ def parse_like(val):
     return valid_val
 
 
+def parse_date(val):
+    import re
+    regex = re.compile(r'^.*(\w{3})\s(\d{2}),\s(\d{4})$')
+    match = regex.match(val)
+    if match:
+        date_str = '-'.join([match.group(1), match.group(2), match.group(3)])
+        date_iso = datetime.strptime(date_str, '%b-%d-%Y').date().isoformat()
+        return date_iso
+
+
 def parse(driver):
     driver.get('https://youtube.com')
 
@@ -99,11 +109,12 @@ def parse(driver):
         # skip_premium_button = get_element('div.ytd-mealbar-promo-renderer a.yt-simple-endpoint #button[aria-label="Skip trial"]', driver, click=True)
         like_dislike_btn_row = [(x.text, x.get_attribute('aria-label')) for x in driver.find_elements_by_css_selector('div#info yt-formatted-string#text')]
         stat = {'like': parse_like(x[1]) for x in like_dislike_btn_row if x[1] and 'like' in x[1]}
+        stat.update(i)
 
         info_row = driver.find_element_by_css_selector('div#info-text')
         stat['view'] = int(''.join([x for x in info_row.find_element_by_css_selector('div#count').text if x in string.digits]))
-        raw_pub_date = datetime.strptime(info_row.find_element_by_css_selector('div#info-strings yt-formatted-string').text, '%b %d, %Y').isoformat()
-        stat['pub_date'] = raw_pub_date.split('T')[0]
+        raw_pub_date = info_row.find_element_by_css_selector('div#info-strings yt-formatted-string').text
+        stat['pub_date'] = parse_date(raw_pub_date)
         print(stat)
 
 
