@@ -61,15 +61,20 @@ def random_delay():
     time.sleep(delay)
 
 
-def get_element(selector, driver, wait=10, click=False):
+def get_element(selector, driver, click=False):
     print(f'waiting for {selector}')
-    # element = WebDriverWait(driver, wait).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+    # element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
     element = driver.find_element_by_css_selector(selector)
     if click:
         random_delay()
         print(f'click on {selector}')
         element.click()
     return element
+
+
+def parse_like(val):
+    valid_val = int(''.join([x for x in val if x.isdigit()]))
+    return valid_val
 
 
 def parse(driver):
@@ -90,9 +95,10 @@ def parse(driver):
     for i in video_url_list:
         print(f'processing {i["url"]}')
         driver.get(i['url'])
+
         # skip_premium_button = get_element('div.ytd-mealbar-promo-renderer a.yt-simple-endpoint #button[aria-label="Skip trial"]', driver, click=True)
         like_dislike_btn_row = [(x.text, x.get_attribute('aria-label')) for x in driver.find_elements_by_css_selector('div#info yt-formatted-string#text')]
-        stat = {'like': x[0] for x in like_dislike_btn_row if x[1] and 'like' in x[1]}
+        stat = {'like': parse_like(x[1]) for x in like_dislike_btn_row if x[1] and 'like' in x[1]}
 
         info_row = driver.find_element_by_css_selector('div#info-text')
         stat['view'] = int(''.join([x for x in info_row.find_element_by_css_selector('div#count').text if x in string.digits]))
