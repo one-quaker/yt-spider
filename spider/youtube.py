@@ -16,6 +16,14 @@ from selenium.webdriver.support import expected_conditions as EC
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+try:
+    SEARCH_Q = sys.argv[1]
+    print(f'{SEARCH_Q}')
+except (Exception, ):
+    print(f'Example: python {os.path.abspath(__file__).split(os.path.sep)[-1]} "rasperry pi"')
+    sys.exit(1)
+
+
 def get_driver():
     profile = webdriver.FirefoxProfile()
     profile.accept_untrusted_certs = True
@@ -68,7 +76,7 @@ def parse(driver):
     driver.get('https://youtube.com')
 
     search_input = get_element('input#search', driver)
-    search_input.send_keys('rasperry pi')
+    search_input.send_keys(SEARCH_Q)
     search_ok = get_element('button#search-icon-legacy', driver, click=True)
 
     video_selector = 'ytd-video-renderer .ytd-video-renderer a#video-title'
