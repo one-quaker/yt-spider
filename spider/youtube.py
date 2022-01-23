@@ -146,7 +146,7 @@ def parse(driver, scroll_count=3):
 
     random.shuffle(video_url_list)
     for i in video_url_list:
-        print(f'processing {i["url"]}')
+        print(f'==================\nprocessing {i["url"]}')
         driver.get(i['url'])
 
         # skip_premium_button = get_element('div.ytd-mealbar-promo-renderer a.yt-simple-endpoint #button[aria-label="Skip trial"]', driver, click=True)
@@ -154,19 +154,18 @@ def parse(driver, scroll_count=3):
         stat.update(i)
 
         like_dislike_btn_row = [(x.text, x.get_attribute('aria-label')) for x in driver.find_elements_by_css_selector('div#info yt-formatted-string#text')]
-        raw_like = [x[1] for x in like_dislike_btn_row if x[1] and 'like' in x[1]][0]
-        like = parse_like(raw_like)
-        stat.update(dict(like=like, raw_like=raw_like))
+        like_raw = [x[1] for x in like_dislike_btn_row if x[1] and 'like' in x[1]][0]
+        like = parse_like(like_raw)
+        stat.update(dict(like=like, like_raw=like_raw))
 
         info_row = driver.find_element_by_css_selector('div#info-text')
 
-        raw_view = info_row.find_element_by_css_selector('div#count').text
-        stat['raw_view'] = raw_view
-        stat['view'] = int(''.join([x for x in raw_view if x in string.digits]))
+        view_raw = info_row.find_element_by_css_selector('div#count').text
+        stat['view_raw'] = view_raw
+        stat['view'] = int(''.join([x for x in view_raw if x in string.digits]))
 
-        raw_pub_date = info_row.find_element_by_css_selector('div#info-strings yt-formatted-string').text
-        stat['raw_pub_date'] = raw_pub_date
-        stat['pub_date'] = parse_date(raw_pub_date)
+        pub_date_raw = info_row.find_element_by_css_selector('div#info-strings yt-formatted-string').text
+        stat.update(dict(pub_date_raw=pub_date_raw, pub_date=parse_date(pub_date_raw)))
 
         print(stat)
         result.append(stat)
